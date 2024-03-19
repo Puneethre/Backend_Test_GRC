@@ -35,11 +35,19 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./publish
 
-  deploy:
-    runs-on: windows-latest
-    needs: [build]
-    steps:
-      - name: Deploy to Production
-        run: |
-          # Replace `YOUR_DEPLOYMENT_SCRIPT` with the script or commands needed to deploy your application
-          YOUR_DEPLOYMENT_SCRIPT
+deploy:
+  runs-on: windows-latest
+  needs: [build]
+  steps:
+    - name: Deploy to Production
+      run: |
+        # Replace `YOUR_DEPLOYMENT_SCRIPT` with the script or commands needed to deploy your application
+        YOUR_DEPLOYMENT_SCRIPT
+
+        # Get the URL for the deployed application
+        URL="https://$GITHUB_ACTOR.github.io/$GITHUB_REPOSITORY/"
+        echo "Deployed application URL: $URL"
+
+
+  
+
