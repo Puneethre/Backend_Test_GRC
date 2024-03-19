@@ -21,14 +21,14 @@ jobs:
       - name: Build and publish
         run: |
           dotnet publish -c Release -o ./publish
-        working-directory: ./Backend_Test_GRC
+        working-directory: ./CustomerSvc
       - name: Generate Swagger Documentation
         run: |
           dotnet swagger tofile --output ./swagger/index.html ./bin/Release/netcoreapp3.1/YourProject.dll
-        working-directory: ./Backend_Test_GRC
+        working-directory: ./CustomerSvc
 
       - name: Copy Swagger UI to Output Directory
         run: |
           mkdir -p ./publish/swagger
           cp ./swagger/index.html ./publish/swagger
-        working-directory: ./Backend_Test_GRC
+        working-directory: ./CustomerSvc
