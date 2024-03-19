@@ -1,0 +1,45 @@
+name: .NET Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.x # Change this to your desired .NET version
+    
+    - name: Build and publish
+      run: |
+        dotnet build CustomerSvc.csproj -c Release
+        dotnet publish CustomerSvc.csproj -c Release -o ./publish
+        
+    - name: Generate Swagger documentation
+      run: |
+        # Command to generate Swagger documentation, replace with your actual command
+        # For example, you might use Swashbuckle CLI:
+        dotnet tool install --global Swashbuckle.AspNetCore.Cli
+        dotnet swagger tofile --output ./swagger/index.html YourProject.dll v1
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./publish
+
+  deploy:
+    runs-on: windows-latest
+    needs: [build]
+    steps:
+      - name: Deploy to Production
+        run: |
+          # Replace `YOUR_DEPLOYMENT_SCRIPT` with the script or commands needed to deploy your application
+          YOUR_DEPLOYMENT_SCRIPT
