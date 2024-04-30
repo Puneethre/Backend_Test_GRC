@@ -1,34 +1,40 @@
-name: Deploy to GitHub
+name: .NET Deploy
 
 on:
   push:
     branches:
-      - main
+      - main  # Change this to your main branch name
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup .NET Core
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.0' # adjust version if needed
+          dotnet-version: '8.0.x'  # Change this to your desired .NET version
 
-      - name: Build and publish
-        run: |
-          dotnet publish -c Release -o ./publish
-        working-directory: ./CustomerSvc
-      - name: Generate Swagger Documentation
-        run: |
-          dotnet swagger tofile --output ./swagger/index.html ./bin/Release/netcoreapp3.1/YourProject.dll
-        working-directory: ./CustomerSvc
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Copy Swagger UI to Output Directory
-        run: |
-          mkdir -p ./publish/swagger
-          cp ./swagger/index.html ./publish/swagger
-        working-directory: ./CustomerSvc
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Publish
+        run: dotnet publish -c Release -o ./publish
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: ./publish
