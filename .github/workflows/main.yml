@@ -1,42 +1,35 @@
-name: .NET Deploy
+name: Deploy to IIS
 
 on:
   push:
     branches:
-      - main  # Change this to your main branch name
+      - main  # Adjust branch as needed
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.0.x'  # Change this to your desired .NET version
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release
-
-      - name: Publish
-        run: dotnet publish -c Release -o ./publish
-
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ./publish
+    - name: Checkout code
+      uses: actions/checkout@v2
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.x'  # Adjust version as needed
 
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build the project
+      run: dotnet build --configuration Release
+
+    - name: Publish the project
+      run: dotnet publish -c Release -o ./publish
+
+    - name: Copy files to IIS directory
+      run: xcopy /s /y .\publish\*.* C:\inetpub\wwwroot\YourApp\
+
+    # Optionally, restart IIS
+    # - name: Restart IIS
+    #   run: iisreset /restart
