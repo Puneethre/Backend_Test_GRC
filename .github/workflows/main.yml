@@ -37,7 +37,7 @@ jobs:
 
         # Run PowerShell script to deploy to IIS and configure inbound/outbound rules
         $iisSiteName = "MyWebsite"
-        $iisPort = "8080"
+        $iisPort = "105"
         $publishPath = "./publish"  # Update with your publish path relative to the workspace
 
         Import-Module WebAdministration
