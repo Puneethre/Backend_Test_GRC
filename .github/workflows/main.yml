@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: window-latest  # Use the self-hosted runner for deployment
+    runs-on: windows-latest  # Use the latest Windows runner for deployment
 
     steps:
     - name: Checkout code
@@ -31,7 +31,7 @@ jobs:
     - name: Publish to IIS
       run: |
         dotnet publish -c Release -o ./publish
-
+        
         # Set PowerShell Execution Policy
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
