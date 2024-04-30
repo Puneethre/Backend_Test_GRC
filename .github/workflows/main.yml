@@ -30,7 +30,7 @@ jobs:
       - name: Copy files to IIS directory
         run: |
           # Copy files to IIS directory
-          robocopy /MIR ./publish "C:\Path\To\Your\Website"
+          robocopy /MIR ./publish "D:\grc"
 
       - name: Configure Inbound Port
         run: |
