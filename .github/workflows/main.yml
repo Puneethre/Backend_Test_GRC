@@ -3,33 +3,38 @@ name: Deploy to IIS
 on:
   push:
     branches:
-      - main  # Adjust branch as needed
+      - main
 
 jobs:
-  deploy:
+  build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '8.x'  # Adjust version as needed
+        dotnet-version: '8.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build the project
+    - name: Build
       run: dotnet build --configuration Release
 
-    - name: Publish the project
-      run: dotnet publish -c Release -o ./publish
+    - name: Publish
+      run: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
 
-    - name: Copy files to IIS directory
-      run: xcopy /s /y .\publish\*.* C:\inetpub\wwwroot\YourApp\
+    - name: Deploy to IIS
+      uses: warrenbuckley/DeployIISWebsite@1.0.1
+      with:
+        WebsiteName: 'MyDotNetApp'
+        PhysicalPath: '$(Build.ArtifactStagingDirectory)'
+        AppPoolName: 'MyAppPool'
 
-    # Optionally, restart IIS
-    # - name: Restart IIS
-    #   run: iisreset /restart
+    - name: Configure Inbound Port
+      run: |
+        # Add inbound rule for port 105
+        New-NetFirewallRule -DisplayName "Allow inbound port 105" -Direction Inbound -LocalPort 105 -Protocol TCP -Action Allow
