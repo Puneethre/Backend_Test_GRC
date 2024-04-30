@@ -1,38 +1,52 @@
-name: Deploy to IIS
+name: .NET
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-deploy:
+    runs-on: window-latest  # Use the self-hosted runner for deployment
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.0.x'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore
+    - name: Restore dependencies
+      run: dotnet restore
 
-      - name: Build
-        run: dotnet build --configuration Release
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish -c Release -o ./publish
+    - name: Test
+      run: dotnet test --verbosity normal
 
-      - name: Copy files to IIS directory
-        run: |
-          # Copy files to IIS directory
-          robocopy /MIR ./publish "D:\grc"
+    - name: Publish to IIS
+      run: |
+        dotnet publish -c Release -o ./publish
 
-      - name: Configure Inbound Port
-        run: |
-          # Add inbound rule for port 105
-          New-NetFirewallRule -DisplayName "Allow inbound port 105" -Direction Inbound -LocalPort 105 -Protocol TCP -Action Allow
+        # Set PowerShell Execution Policy
+        Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+        # Run PowerShell script to deploy to IIS and configure inbound/outbound rules
+        $iisSiteName = "MyWebsite"
+        $iisPort = "8080"
+        $publishPath = "./publish"  # Update with your publish path relative to the workspace
+
+        Import-Module WebAdministration
+
+        # Create a new IIS website
+        New-WebSite -Name $iisSiteName -Port $iisPort -PhysicalPath (Resolve-Path $publishPath).Path
+
+        # Configure inbound rule to allow traffic on the specified port
+        New-NetFirewallRule -DisplayName "Allow Inbound Port $iisPort" -Direction Inbound -Protocol TCP -LocalPort $iisPort -Action Allow
+
+        # Configure outbound rule to allow traffic from the specified port
+        New-NetFirewallRule -DisplayName "Allow Outbound Port $iisPort" -Direction Outbound -Protocol TCP -LocalPort $iisPort -Action Allow
